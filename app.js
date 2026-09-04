@@ -8,6 +8,7 @@
 
   let draft = null;
   let roundIndex = 0;
+  let cloudState = { ready:false, available:false, signedIn:false, accountName:'', message:'Local' };
 
   const makeId = () => (crypto.randomUUID ? crypto.randomUUID() : `rt75-${Date.now()}-${Math.random().toString(16).slice(2)}`);
   const todayLocal = () => {
@@ -156,17 +157,58 @@
       <div class="context-item wide"><span>Achievements</span><strong>${escapeHtml(c.achievements || '—')}</strong></div>`;
   }
 
-  function finalSave(){
+  async function finalSave(){
     const sessions=safeSessions();
-    const record={...draft, savedAt:new Date().toISOString()};
+    const record={...draft, savedAt:new Date().toISOString(), sync:{status:'pending', message:'Saved locally; waiting to sync.'}};
     sessions.unshift(record);
     saveSessions(sessions);
     clearDraft();
     const total=sum(record.rounds.map(r=>r.roundTotal));
     $('successSummary').textContent=`${formatDate(record.sessionDate)} · ${record.discipline} · ${total}/600`;
+    $('successSync').textContent='Saved safely on this device.';
     draft=null; roundIndex=0;
     updateHome();
     showScreen('success');
+
+    if(cloudState.signedIn){
+      $('successSync').textContent='Saved locally. Syncing to Microsoft Lists…';
+      await syncRecord(record.sessionId, msg => $('successSync').textContent = msg);
+    } else {
+      $('successSync').textContent='Saved locally. Sign in with Microsoft to sync.';
+    }
+  }
+
+  async function syncRecord(sessionId, progress = () => {}){
+    const sessions=safeSessions();
+    const index=sessions.findIndex(s=>s.sessionId===sessionId);
+    if(index<0) return false;
+    if(!window.rt75Cloud) return false;
+    try{
+      sessions[index].sync={status:'syncing', message:'Syncing…'};
+      saveSessions(sessions);
+      progress('Syncing to Microsoft Lists…');
+      await window.rt75Cloud.syncSession(sessions[index], progress);
+      const refreshed=safeSessions();
+      const idx=refreshed.findIndex(s=>s.sessionId===sessionId);
+      if(idx>=0){
+        refreshed[idx].sync={status:'synced', syncedAt:new Date().toISOString(), message:'Synced to Microsoft Lists'};
+        saveSessions(refreshed);
+      }
+      progress('Synced to Microsoft Lists ✓');
+      updateHome();
+      return true;
+    }catch(err){
+      console.error('Road to 75 sync failed', err);
+      const refreshed=safeSessions();
+      const idx=refreshed.findIndex(s=>s.sessionId===sessionId);
+      if(idx>=0){
+        refreshed[idx].sync={status:'error', message:err.message || 'Sync failed'};
+        saveSessions(refreshed);
+      }
+      progress(`Saved locally. Sync failed: ${err.message || 'Unknown error'}`);
+      updateHome();
+      return false;
+    }
   }
 
   function renderHistory(){
@@ -175,14 +217,28 @@
     $('historyList').innerHTML=sessions.map(s=>{
       const total=sum(s.rounds.map(r=>r.roundTotal));
       const avg=total/8;
-      return `<article class="history-item"><div class="history-head"><strong>${formatDate(s.sessionDate)}</strong><span>${s.discipline}</span></div><div class="history-meta">${shortId(s.sessionId)}</div><div class="history-stats"><span>Total <strong>${total}/600</strong></span><span>Avg round <strong>${avg.toFixed(2)}</strong></span><span>Focus <strong>${s.context.focus}/5</strong></span></div></article>`;
+      const sync=s.sync || {status:'local'};
+      const badge = sync.status==='synced' ? '<span class="sync-badge synced">Microsoft ✓</span>' : sync.status==='error' ? '<span class="sync-badge error">Sync error</span>' : '<span class="sync-badge">Local</span>';
+      const action = sync.status!=='synced' && cloudState.signedIn ? `<button class="btn secondary sync-action" data-sync-id="${escapeHtml(s.sessionId)}">Sync to Microsoft</button>` : '';
+      return `<article class="history-item"><div class="history-head"><strong>${formatDate(s.sessionDate)}</strong><span>${s.discipline}</span></div><div class="history-meta">${shortId(s.sessionId)} · ${badge}</div><div class="history-stats"><span>Total <strong>${total}/600</strong></span><span>Avg round <strong>${avg.toFixed(2)}</strong></span><span>Focus <strong>${s.context.focus}/5</strong></span></div>${action}</article>`;
     }).join('');
+    document.querySelectorAll('[data-sync-id]').forEach(btn=>btn.addEventListener('click', async ()=>{
+      btn.disabled=true; btn.textContent='Syncing…';
+      await syncRecord(btn.dataset.syncId, msg=>btn.textContent=msg);
+      renderHistory();
+    }));
   }
 
   function updateHome(){
-    const count=safeSessions().length;
+    const sessions=safeSessions();
+    const count=sessions.length;
+    const pending=sessions.filter(s=>s.sync?.status!=='synced').length;
     $('savedCount').textContent = count ? `${count} session${count===1?'':'s'} saved on this device.` : 'No sessions saved yet.';
     $('resumeSessionBtn').classList.toggle('hidden', !readDraft());
+    if($('cloudHint')){
+      if(cloudState.signedIn) $('cloudHint').textContent = pending ? `${pending} local session${pending===1?'':'s'} waiting to sync.` : 'Microsoft Lists sync is connected.';
+      else $('cloudHint').textContent = 'Sessions are always saved locally first. Tap Sign in to enable Microsoft Lists sync.';
+    }
   }
 
   function resumeDraft(){
@@ -211,6 +267,26 @@
   function shortId(id){ return id ? `Session ${id.slice(0,8)}` : ''; }
   function escapeHtml(s){ return String(s).replace(/[&<>'"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch])); }
 
+  function renderCloudState(){
+    const pill=$('connectionPill');
+    pill.textContent=cloudState.message || 'Local';
+    pill.classList.toggle('signed-in', !!cloudState.signedIn);
+    pill.title = cloudState.signedIn ? `${cloudState.accountName || 'Microsoft account'} · synced via Microsoft Lists` : 'Tap to sign in with Microsoft';
+    updateHome();
+  }
+
+  async function initCloud(){
+    if(!window.rt75Cloud){ renderCloudState(); return; }
+    try{
+      cloudState = await window.rt75Cloud.init();
+      renderCloudState();
+    }catch(err){
+      console.error(err);
+      cloudState={ready:true,available:false,signedIn:false,message:'Local'};
+      renderCloudState();
+    }
+  }
+
   $('sessionDate').value=todayLocal();
   $('startSessionBtn').addEventListener('click',startNewSession);
   $('resumeSessionBtn').addEventListener('click',resumeDraft);
@@ -222,14 +298,30 @@
   $('backToScoresBtn').addEventListener('click',()=>{persistContext();roundIndex=7;loadRound();showScreen('score');});
   $('reviewBtn').addEventListener('click',()=>{buildReview();showScreen('review');});
   $('editContextBtn').addEventListener('click',()=>showScreen('context'));
-  $('saveSessionBtn').addEventListener('click',finalSave);
+  $('saveSessionBtn').addEventListener('click',()=>finalSave());
   $('newSessionBtn').addEventListener('click',()=>{showScreen('home');updateHome();});
   $('openHistoryBtn').addEventListener('click',()=>{renderHistory();showScreen('history');});
   $('successHistoryBtn').addEventListener('click',()=>{renderHistory();showScreen('history');});
   $('historyBackBtn').addEventListener('click',()=>{showScreen('home');updateHome();});
   $('exportScoresBtn').addEventListener('click',exportScores);
   $('exportContextBtn').addEventListener('click',exportContext);
+  $('connectionPill').addEventListener('click', async ()=>{
+    if(!window.rt75Cloud) return;
+    if(cloudState.signedIn){
+      const confirmed=window.confirm(`Signed in as ${cloudState.accountName || 'Microsoft account'}. Sign out?`);
+      if(confirmed) await window.rt75Cloud.signOut();
+      return;
+    }
+    try{ await window.rt75Cloud.signIn(); }
+    catch(err){ window.alert(err.message || 'Microsoft sign-in is unavailable.'); }
+  });
+
+  window.addEventListener('rt75-cloud-state',e=>{
+    cloudState=e.detail;
+    renderCloudState();
+  });
 
   updateHome();
+  initCloud();
   if('serviceWorker' in navigator){ window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{})); }
 })();

@@ -1,24 +1,17 @@
-# Microsoft Lists sync — next step
+# Microsoft Lists integration status
 
-The PWA is structured for local-first entry. To sync directly to Microsoft Lists from the browser, the clean approach is Microsoft Entra ID + Microsoft Graph.
+Configured for:
+- Single-tenant Microsoft Entra SPA
+- Delegated Microsoft Graph permissions: User.Read, Sites.ReadWrite.All
+- Road to 75 Scores list
+- Road to 75 Session Context list
 
-Required configuration (not yet filled in):
-
-- Tenant ID
-- Entra application (client) ID
-- SharePoint site ID
-- `Road to 75 Scores` list ID
-- `Road to 75 Session Context` list ID
-
-`config.js` already contains placeholders for these values.
-
-The production sync flow will be:
-
-1. Sign in with Microsoft.
-2. Continue to save a complete session locally first.
-3. POST eight score rows to Road to 75 Scores.
-4. POST one context row to Road to 75 Session Context.
-5. Mark the local session as synced.
-6. If a network request fails, leave it queued locally for retry rather than losing the session.
-
-This preserves the range-friendly offline behaviour while making Microsoft Lists the durable data source for Power BI.
+Next validation steps after deploying v0.2:
+1. Open the app online.
+2. Tap the Local / Sign in pill and sign in with the Omni Analytics account.
+3. Enter a dummy session.
+4. Save it.
+5. Confirm 8 rows appear in Road to 75 Scores.
+6. Confirm 1 row appears in Road to 75 Session Context.
+7. Confirm History shows Microsoft ✓.
+8. Refresh Power BI after connecting it to the two Lists.

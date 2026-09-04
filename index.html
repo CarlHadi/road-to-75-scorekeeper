@@ -22,7 +22,7 @@
           <p>Scorekeeper</p>
         </div>
       </div>
-      <div id="connectionPill" class="pill">Local</div>
+      <button id="connectionPill" class="pill cloud-pill" type="button" title="Microsoft sync status">Local</button>
     </header>
 
     <main id="app" class="content" aria-live="polite">
@@ -57,6 +57,7 @@
             <button id="openHistoryBtn" class="text-btn">View</button>
           </div>
           <p id="savedCount" class="muted">No sessions saved yet.</p>
+          <p id="cloudHint" class="cloud-hint muted">Sessions are always saved locally first.</p>
         </div>
       </section>
 
@@ -158,6 +159,7 @@
           <p class="eyebrow">Session saved</p>
           <h2>Eight rounds recorded.</h2>
           <p id="successSummary" class="muted"></p>
+          <p id="successSync" class="sync-message muted"></p>
           <button id="newSessionBtn" class="btn primary">New session</button>
           <button id="successHistoryBtn" class="btn secondary">View history</button>
         </div>
@@ -179,11 +181,12 @@
     </main>
 
     <footer class="app-footer">
-      <span>Road to 75 · v0.1</span>
-      <span>Local-first</span>
+      <span>Road to 75 · v0.2</span>
+      <span>Local-first · Microsoft sync</span>
     </footer>
   </div>
   <script src="config.js"></script>
+  <script src="cloud.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

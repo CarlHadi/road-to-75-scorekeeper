@@ -1,52 +1,40 @@
-# Road to 75 Scorekeeper v0.1
+# Road to 75 Scorekeeper v0.2
 
-A local-first Progressive Web App for recording scored knife/axe walk-back sessions on a phone.
+A local-first PWA for recording KATTA-style walk-back scores and session context on a phone.
 
-## What works now
+## v0.2 adds
 
-- Session date (defaults to today)
-- Discipline: Knife / Axe
-- Walk-Back A and B, four rounds each
-- 3m–7m score entry with 0–15 validation
-- Live round total and percentage
-- Draft saving between rounds
-- Session context: Energy, Focus, Physical Setup, Distraction, Notes, Achievements
-- Review before save
-- Local session history
-- Offline app shell via service worker
-- CSV export for Scores and Session Context
+- Microsoft Entra sign-in
+- Microsoft Graph sync to the two Road to 75 Microsoft Lists
+- Local-first saving before any cloud operation
+- Per-session sync status in History
+- Safe retry: the app checks for existing Session ID / round combinations before creating missing rows
 
-## Data shape
+## Microsoft Lists mapping
 
-### Scores
-Session ID, Session Date, Discipline, Walk-Back, Round, 3m Score, 4m Score, 5m Score, 6m Score, 7m Score
+### Road to 75 Scores
+One item per scored round (8 per session):
+- `Title` <- Session ID
+- `SessionDate` <- Session Date
+- `Disipline` <- Discipline (SharePoint internal name contains the original spelling)
+- `Walk_x002d_Back` <- Walk-Back
+- `Round` <- Round
+- `_x0033_mScore` ... `_x0037_mScore` <- 3m ... 7m scores
 
-### Session Context
-Session ID, Session Date, Discipline, Energy, Focus, Physical Setup, Distraction Level, Notes, Achievements
+### Road to 75 Session Context
+One item per session:
+- `Title` <- Session ID
+- `SessionDate` <- Session Date
+- `Disipline` <- Discipline
+- `Energy`
+- `Focus`
+- `PhysicalSetup`
+- `DistractionLevel`
+- `Notes`
+- `Achivements` <- Achievements (SharePoint internal name contains the original spelling)
 
-These match the two Microsoft Lists created for Road to 75.
+## Important
 
-## Important v0.1 limitation
+This is a browser/PWA client. Do not add an Entra client secret. The client ID and tenant ID are public SPA identifiers, not secrets.
 
-Saved sessions currently live in the browser's local storage on the device. CSV export is provided for validation/testing. Direct Microsoft Lists sync is the next build step.
-
-## Run locally
-
-A service worker/PWA must be served over HTTP(S), not opened directly as a file.
-
-From this folder, for testing on a computer:
-
-    python3 -m http.server 8080
-
-Then open http://localhost:8080
-
-For iPhone installation, host this folder on an HTTPS site (for example GitHub Pages, Cloudflare Pages, Netlify, or another static host), open it in Safari, then use Share > Add to Home Screen.
-
-## Next build step: Microsoft Lists sync
-
-The app already creates a stable Session ID and stores the exact raw fields needed by the two Lists. The next version will authenticate with Microsoft and write:
-
-- 8 items to `Road to 75 Scores`
-- 1 item to `Road to 75 Session Context`
-
-After that, Power BI can use the Lists as its source and the spreadsheet becomes optional for scored-session entry.
+The app always saves locally first. If Microsoft sign-in or Graph is unavailable, the session remains available on the device and can be retried from Saved Sessions.
