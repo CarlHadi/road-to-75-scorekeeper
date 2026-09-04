@@ -164,7 +164,9 @@
   }
 
   function sharePointDate(dateOnly) {
-    return `${dateOnly}T00:00:00Z`;
+    // SharePoint columns are configured as Date only. Send YYYY-MM-DD directly
+    // so Microsoft Graph does not apply a timezone conversion and shift the day.
+    return dateOnly;
   }
 
   async function syncSession(session, progress = () => {}) {

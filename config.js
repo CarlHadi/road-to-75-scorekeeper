@@ -1,4 +1,4 @@
-// Road to 75 v0.2 configuration.
+// Road to 75 v0.2.1 configuration.
 // These IDs identify the public SPA registration and SharePoint resources.
 // They are identifiers, not client secrets. Never add a client secret to this PWA.
 window.ROAD_TO_75_CONFIG = {
