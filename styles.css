@@ -1,0 +1,39 @@
+:root {
+  --bg:#111111;
+  --panel:#181818;
+  --panel-2:#1f1f1f;
+  --border:#343434;
+  --text:#f5f5f5;
+  --muted:#a9a9a9;
+  --ruby:#a1122c;
+  --ruby-2:#c11838;
+  --danger:#ff8a8a;
+  --ok:#cfe8d2;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color-scheme: dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);min-height:100%}
+body{padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+button,input,select,textarea{font:inherit}
+button{touch-action:manipulation}
+.app-shell{max-width:620px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column}
+.app-header{display:flex;justify-content:space-between;align-items:center;padding:18px 18px 12px;border-bottom:1px solid var(--border);background:rgba(17,17,17,.96);position:sticky;top:0;z-index:5}
+.brand{display:flex;gap:10px;align-items:center}.brand-icon{width:42px;height:42px;border-radius:50%;object-fit:cover}.brand h1{font-size:19px;margin:0}.brand p{margin:1px 0 0;color:var(--muted);font-size:12px}
+.pill{font-size:12px;padding:6px 9px;border:1px solid var(--border);border-radius:999px;color:var(--muted)}
+.content{padding:18px;flex:1}.screen{display:none}.screen.active{display:block}
+.hero-card{padding:10px 2px 20px}.hero-card.compact{padding-bottom:12px}.hero-card h2,.page-heading h2{font-size:30px;line-height:1.05;margin:5px 0 8px}.eyebrow{text-transform:uppercase;letter-spacing:.11em;color:#d66b7d;font-size:12px;font-weight:800;margin:0}.muted{color:var(--muted);line-height:1.45}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:14px}.card.compact{padding:14px}.stack{display:grid;gap:14px}
+.field{display:grid;gap:7px}.field>span{font-size:13px;font-weight:700;color:#ddd}.field input,.field select,.field textarea{width:100%;border:1px solid var(--border);background:var(--panel-2);color:var(--text);border-radius:12px;padding:13px 14px;min-height:48px;outline:none}.field textarea{resize:vertical}.field input:focus,.field select:focus,.field textarea:focus,.score-card input:focus{border-color:var(--ruby-2);box-shadow:0 0 0 3px rgba(193,24,56,.16)}
+.btn{min-height:50px;border-radius:12px;border:1px solid var(--border);padding:12px 16px;font-weight:800;color:var(--text);cursor:pointer}.btn.primary{background:var(--ruby);border-color:var(--ruby)}.btn.secondary{background:var(--panel-2)}.btn:disabled{opacity:.35;cursor:not-allowed}.text-btn{border:0;background:transparent;color:#e17f8f;font-weight:800;padding:8px;cursor:pointer}.text-btn.centered{display:block;margin:10px auto}.hidden{display:none!important}
+.section-title-row{display:flex;justify-content:space-between;gap:12px;align-items:center}.section-title-row h3{margin:0}.page-heading{margin-bottom:14px}
+.progress-wrap{margin:5px 0 16px}.progress-copy{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:8px}.progress-track{height:5px;background:#2b2b2b;border-radius:999px;overflow:hidden}.progress-bar{height:100%;background:var(--ruby);width:12.5%;transition:width .18s ease}
+.total-card{text-align:center}.total-card>div{display:flex;justify-content:center;align-items:baseline;gap:5px;margin:3px 0}.total-card strong{font-size:44px}.total-card>div span{color:var(--muted)}
+.score-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.score-card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:12px;display:grid;gap:8px}.score-card.full{grid-column:1/-1}.score-card span{font-weight:900;font-size:15px}.score-card input{width:100%;min-height:58px;border:1px solid var(--border);background:var(--panel-2);color:var(--text);border-radius:10px;text-align:center;font-size:26px;font-weight:850;outline:none}
+.error{color:var(--danger);min-height:22px;font-size:13px}.round-tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin:10px 0 16px}.round-tile{border:1px solid var(--border);border-radius:10px;padding:8px 5px;text-align:center;background:var(--panel)}.round-tile.current{outline:2px solid var(--ruby)}.round-tile small{display:block;color:var(--muted);font-size:11px}.round-tile strong{font-size:17px}.action-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.rating-block{display:grid;gap:8px}.rating-label{display:flex;justify-content:space-between}.rating-label span{font-weight:750}.rating-label strong{color:#e17f8f}.rating-block input{accent-color:var(--ruby);width:100%}
+.review-rounds{display:grid;gap:8px;margin-top:12px}.review-row{display:grid;grid-template-columns:58px 1fr 54px;gap:8px;align-items:center;border-top:1px solid #292929;padding-top:8px}.review-row:first-child{border-top:0;padding-top:0}.review-scores{display:flex;gap:7px;color:var(--muted);font-size:13px;flex-wrap:wrap}.review-total{text-align:right;font-weight:900}.context-summary{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}.context-item{border:1px solid var(--border);border-radius:10px;padding:10px}.context-item span{display:block;color:var(--muted);font-size:11px;margin-bottom:3px}.context-item.wide{grid-column:1/-1}
+.success-card{text-align:center;padding:48px 4px}.success-mark{width:72px;height:72px;border-radius:50%;background:var(--ruby);display:grid;place-items:center;font-size:38px;margin:0 auto 18px}.success-card h2{font-size:30px;margin:6px 0 8px}.success-card .btn{width:100%;margin-top:10px}
+.history-list{display:grid;gap:10px}.history-item{border:1px solid var(--border);background:var(--panel);border-radius:14px;padding:14px}.history-head{display:flex;justify-content:space-between;gap:10px}.history-head strong{font-size:17px}.history-meta{color:var(--muted);font-size:13px;margin-top:4px}.history-stats{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;font-size:13px}.export-card{margin-top:16px}
+.app-footer{display:flex;justify-content:space-between;padding:14px 18px;color:#777;font-size:11px;border-top:1px solid #222}
+@media(min-width:500px){.score-card.full{grid-column:auto}.score-grid{grid-template-columns:repeat(3,1fr)}.round-tiles{grid-template-columns:repeat(8,1fr)}}

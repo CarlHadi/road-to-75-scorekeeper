@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#111111" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Road to 75" />
+  <title>Road to 75 Scorekeeper</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="app-header">
+      <div class="brand">
+        <img src="icons/icon-192.png" class="brand-icon" alt="Road to 75" />
+        <div>
+          <h1>Road to 75</h1>
+          <p>Scorekeeper</p>
+        </div>
+      </div>
+      <div id="connectionPill" class="pill">Local</div>
+    </header>
+
+    <main id="app" class="content" aria-live="polite">
+      <section id="screen-home" class="screen active">
+        <div class="hero-card">
+          <p class="eyebrow">Throw. Track. Improve.</p>
+          <h2>New scored session</h2>
+          <p class="muted">Record Walk-Back A and B, then capture the context around the session.</p>
+        </div>
+
+        <div class="card stack">
+          <label class="field">
+            <span>Session date</span>
+            <input id="sessionDate" type="date" />
+          </label>
+
+          <label class="field">
+            <span>Discipline</span>
+            <select id="discipline">
+              <option value="Knife" selected>Knife</option>
+              <option value="Axe">Axe</option>
+            </select>
+          </label>
+
+          <button id="startSessionBtn" class="btn primary">Start session</button>
+          <button id="resumeSessionBtn" class="btn secondary hidden">Resume draft</button>
+        </div>
+
+        <div class="card compact">
+          <div class="section-title-row">
+            <h3>Saved sessions</h3>
+            <button id="openHistoryBtn" class="text-btn">View</button>
+          </div>
+          <p id="savedCount" class="muted">No sessions saved yet.</p>
+        </div>
+      </section>
+
+      <section id="screen-score" class="screen">
+        <div class="progress-wrap">
+          <div class="progress-copy">
+            <span id="roundLabel" class="eyebrow">Walk-Back A · Round 1</span>
+            <span id="roundProgress" class="muted">1 of 8</span>
+          </div>
+          <div class="progress-track"><div id="progressBar" class="progress-bar"></div></div>
+        </div>
+
+        <div class="card total-card">
+          <span class="muted">Round total</span>
+          <div><strong id="roundTotal">0</strong><span>/75</span></div>
+          <span id="roundPct" class="muted">0.0%</span>
+        </div>
+
+        <form id="scoreForm" class="score-grid" novalidate>
+          <label class="score-card"><span>3m</span><input id="score3" inputmode="numeric" type="number" min="0" max="15" step="1" placeholder="0–15" /></label>
+          <label class="score-card"><span>4m</span><input id="score4" inputmode="numeric" type="number" min="0" max="15" step="1" placeholder="0–15" /></label>
+          <label class="score-card"><span>5m</span><input id="score5" inputmode="numeric" type="number" min="0" max="15" step="1" placeholder="0–15" /></label>
+          <label class="score-card"><span>6m</span><input id="score6" inputmode="numeric" type="number" min="0" max="15" step="1" placeholder="0–15" /></label>
+          <label class="score-card full"><span>7m</span><input id="score7" inputmode="numeric" type="number" min="0" max="15" step="1" placeholder="0–15" /></label>
+        </form>
+
+        <p id="scoreError" class="error" role="alert"></p>
+
+        <div id="roundTiles" class="round-tiles"></div>
+
+        <div class="action-row">
+          <button id="prevRoundBtn" class="btn secondary">Previous</button>
+          <button id="nextRoundBtn" class="btn primary">Save & next</button>
+        </div>
+        <button id="saveExitBtn" class="text-btn centered">Save draft & exit</button>
+      </section>
+
+      <section id="screen-context" class="screen">
+        <div class="hero-card compact">
+          <p class="eyebrow">Session context</p>
+          <h2>How did the session feel?</h2>
+          <p class="muted">These values are recorded once for the complete session.</p>
+        </div>
+
+        <div class="card stack">
+          <div class="rating-block">
+            <div class="rating-label"><span>Energy</span><strong id="energyValue">3/5</strong></div>
+            <input id="energy" type="range" min="1" max="5" step="1" value="3" />
+          </div>
+          <div class="rating-block">
+            <div class="rating-label"><span>Focus</span><strong id="focusValue">3/5</strong></div>
+            <input id="focus" type="range" min="1" max="5" step="1" value="3" />
+          </div>
+          <div class="rating-block">
+            <div class="rating-label"><span>Physical setup</span><strong id="physicalValue">3/5</strong></div>
+            <input id="physical" type="range" min="1" max="5" step="1" value="3" />
+          </div>
+          <div class="rating-block">
+            <div class="rating-label"><span>Distraction level</span><strong id="distractionValue">3/5</strong></div>
+            <input id="distraction" type="range" min="1" max="5" step="1" value="3" />
+          </div>
+
+          <label class="field"><span>Notes</span><textarea id="notes" rows="3" placeholder="Anything that affected the session?"></textarea></label>
+          <label class="field"><span>Achievements</span><textarea id="achievements" rows="2" placeholder="PBs, breakthroughs, useful wins..."></textarea></label>
+        </div>
+
+        <div class="action-row">
+          <button id="backToScoresBtn" class="btn secondary">Back</button>
+          <button id="reviewBtn" class="btn primary">Review session</button>
+        </div>
+      </section>
+
+      <section id="screen-review" class="screen">
+        <div class="hero-card compact">
+          <p class="eyebrow">Review</p>
+          <h2>Ready to save</h2>
+          <p id="reviewMeta" class="muted"></p>
+        </div>
+
+        <div class="card">
+          <div class="section-title-row"><h3>Round scores</h3><strong id="sessionTotal"></strong></div>
+          <div id="reviewRounds" class="review-rounds"></div>
+        </div>
+
+        <div class="card">
+          <h3>Session context</h3>
+          <div id="reviewContext" class="context-summary"></div>
+        </div>
+
+        <div class="action-row">
+          <button id="editContextBtn" class="btn secondary">Back</button>
+          <button id="saveSessionBtn" class="btn primary">Save session</button>
+        </div>
+      </section>
+
+      <section id="screen-success" class="screen">
+        <div class="success-card">
+          <div class="success-mark">✓</div>
+          <p class="eyebrow">Session saved</p>
+          <h2>Eight rounds recorded.</h2>
+          <p id="successSummary" class="muted"></p>
+          <button id="newSessionBtn" class="btn primary">New session</button>
+          <button id="successHistoryBtn" class="btn secondary">View history</button>
+        </div>
+      </section>
+
+      <section id="screen-history" class="screen">
+        <div class="section-title-row page-heading">
+          <div><p class="eyebrow">Local history</p><h2>Saved sessions</h2></div>
+          <button id="historyBackBtn" class="text-btn">Done</button>
+        </div>
+        <div id="historyList" class="history-list"></div>
+        <div class="card stack export-card">
+          <h3>Export</h3>
+          <p class="muted">Useful for validation while we wire the app directly to Microsoft Lists.</p>
+          <button id="exportScoresBtn" class="btn secondary">Export Scores CSV</button>
+          <button id="exportContextBtn" class="btn secondary">Export Context CSV</button>
+        </div>
+      </section>
+    </main>
+
+    <footer class="app-footer">
+      <span>Road to 75 · v0.1</span>
+      <span>Local-first</span>
+    </footer>
+  </div>
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
