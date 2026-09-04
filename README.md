@@ -1,4 +1,4 @@
-# Road to 75 Scorekeeper v0.2.2
+# Road to 75 Scorekeeper v0.2.3
 
 A local-first PWA for recording KATTA-style walk-back scores and session context on a phone.
 
@@ -50,3 +50,10 @@ The app always saves locally first. If Microsoft sign-in or Graph is unavailable
 - Each round can be entered as full 3m–7m distance scores or as a round total only.
 - Total-only rounds leave the five distance fields blank so historical data is not fabricated.
 - CSV Scores export now includes Round Total.
+
+
+## v0.2.3
+
+- Discipline choices now match Microsoft Lists exactly: `Knife - Rotational`, `Axe`, and `Knife - No-Spin`.
+- `Knife - Rotational` is the default for a new session.
+- Service-worker cache bumped so installed PWAs pick up the new discipline options.
