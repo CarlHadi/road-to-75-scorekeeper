@@ -5,6 +5,7 @@
   const $ = id => document.getElementById(id);
   const screens = [...document.querySelectorAll('.screen')];
   const scoreInputs = ['score3','score4','score5','score6','score7'].map($);
+  const totalOnlyInput = $('totalOnlyScore');
 
   let draft = null;
   let roundIndex = 0;
@@ -54,7 +55,26 @@
     showScreen('score');
   }
 
+  function roundMode(){
+    return document.querySelector('input[name="entryMode"]:checked')?.value || 'distances';
+  }
+
+  function setRoundMode(mode){
+    const chosen = document.querySelector(`input[name="entryMode"][value="${mode}"]`);
+    if(chosen) chosen.checked = true;
+    const totalOnly = mode === 'total';
+    $('distanceScoreGrid').classList.toggle('hidden', totalOnly);
+    $('totalOnlyWrap').classList.toggle('hidden', !totalOnly);
+    updateRoundTotal();
+  }
+
   function validateScores(){
+    if(roundMode() === 'total') {
+      if(totalOnlyInput.value === '') return {ok:false, message:'Enter the round total.'};
+      const n = Number(totalOnlyInput.value);
+      if(!Number.isInteger(n) || n < 0 || n > 75) return {ok:false, message:'Round total must be a whole number from 0 to 75.'};
+      return {ok:true, mode:'total', total:n, values:[null,null,null,null,null]};
+    }
     const values = [];
     for(const input of scoreInputs){
       if(input.value === '') return {ok:false, message:'Enter a score for every distance.'};
@@ -62,12 +82,13 @@
       if(!Number.isInteger(n) || n < 0 || n > 15) return {ok:false, message:'Each distance score must be a whole number from 0 to 15.'};
       values.push(n);
     }
-    return {ok:true, values};
+    return {ok:true, mode:'distances', total:sum(values), values};
   }
 
   function updateRoundTotal(){
-    const values = scoreInputs.map(i => i.value === '' ? 0 : Math.max(0, Math.min(15, Number(i.value) || 0)));
-    const t = sum(values);
+    let t = 0;
+    if(roundMode() === 'total') t = Math.max(0, Math.min(75, Number(totalOnlyInput.value) || 0));
+    else t = sum(scoreInputs.map(i => i.value === '' ? 0 : Math.max(0, Math.min(15, Number(i.value) || 0))));
     $('roundTotal').textContent = t;
     $('roundPct').textContent = `${((t/75)*100).toFixed(1)}%`;
   }
@@ -77,13 +98,13 @@
     if(!result.ok){ $('scoreError').textContent = result.message; return false; }
     $('scoreError').textContent = '';
     const d = descriptor(roundIndex);
-    const total = sum(result.values);
     draft.rounds[roundIndex] = {
       walkBack:d.walkBack,
       round:d.round,
+      entryMode:result.mode,
       score3m:result.values[0], score4m:result.values[1], score5m:result.values[2], score6m:result.values[3], score7m:result.values[4],
-      roundTotal: total,
-      roundPct: total/75
+      roundTotal: result.total,
+      roundPct: result.total/75
     };
     saveDraft();
     return true;
@@ -97,9 +118,11 @@
     $('prevRoundBtn').disabled = roundIndex === 0;
     $('nextRoundBtn').textContent = roundIndex === 7 ? 'Continue to context' : 'Save & next';
     const r = draft.rounds[roundIndex];
-    const vals = r ? [r.score3m,r.score4m,r.score5m,r.score6m,r.score7m] : ['','','','',''];
-    scoreInputs.forEach((input,i)=>input.value = vals[i]);
-    updateRoundTotal();
+    const mode = r?.entryMode || (r && [r.score3m,r.score4m,r.score5m,r.score6m,r.score7m].every(v=>v==null) ? 'total' : 'distances');
+    const vals = r && mode === 'distances' ? [r.score3m,r.score4m,r.score5m,r.score6m,r.score7m] : ['','','','',''];
+    scoreInputs.forEach((input,i)=>input.value = vals[i] ?? '');
+    totalOnlyInput.value = r && mode === 'total' ? r.roundTotal : '';
+    setRoundMode(mode);
     renderRoundTiles();
   }
 
@@ -146,7 +169,12 @@
     $('reviewMeta').textContent = `${formatDate(draft.sessionDate)} · ${draft.discipline} · ${shortId(draft.sessionId)}`;
     const total = sum(draft.rounds.map(r=>r.roundTotal));
     $('sessionTotal').textContent = `${total}/600`;
-    $('reviewRounds').innerHTML = draft.rounds.map(r => `<div class="review-row"><strong>${r.walkBack}${r.round}</strong><div class="review-scores"><span>3m ${r.score3m}</span><span>4m ${r.score4m}</span><span>5m ${r.score5m}</span><span>6m ${r.score6m}</span><span>7m ${r.score7m}</span></div><div class="review-total">${r.roundTotal}</div></div>`).join('');
+    $('reviewRounds').innerHTML = draft.rounds.map(r => {
+      const scores = r.entryMode === 'total' || [r.score3m,r.score4m,r.score5m,r.score6m,r.score7m].every(v=>v==null)
+        ? '<span>Total only · distance detail unavailable</span>'
+        : `<span>3m ${r.score3m}</span><span>4m ${r.score4m}</span><span>5m ${r.score5m}</span><span>6m ${r.score6m}</span><span>7m ${r.score7m}</span>`;
+      return `<div class="review-row"><strong>${r.walkBack}${r.round}</strong><div class="review-scores">${scores}</div><div class="review-total">${r.roundTotal}</div></div>`;
+    }).join('');
     const c=draft.context;
     $('reviewContext').innerHTML = `
       <div class="context-item"><span>Energy</span><strong>${c.energy}/5</strong></div>
@@ -249,8 +277,8 @@
 
   function csvEscape(v){ const s=String(v??''); return /[",\n]/.test(s) ? `"${s.replace(/"/g,'""')}"` : s; }
   function exportScores(){
-    const rows=[['Session ID','Session Date','Discipline','Walk-Back','Round','3m Score','4m Score','5m Score','6m Score','7m Score']];
-    safeSessions().slice().reverse().forEach(s=>s.rounds.forEach(r=>rows.push([s.sessionId,s.sessionDate,s.discipline,r.walkBack,r.round,r.score3m,r.score4m,r.score5m,r.score6m,r.score7m])));
+    const rows=[['Session ID','Session Date','Discipline','Walk-Back','Round','3m Score','4m Score','5m Score','6m Score','7m Score','Round Total']];
+    safeSessions().slice().reverse().forEach(s=>s.rounds.forEach(r=>rows.push([s.sessionId,s.sessionDate,s.discipline,r.walkBack,r.round,r.score3m??'',r.score4m??'',r.score5m??'',r.score6m??'',r.score7m??'',r.roundTotal])));
     downloadCsv('road-to-75-scores.csv',rows);
   }
   function exportContext(){
@@ -291,6 +319,8 @@
   $('startSessionBtn').addEventListener('click',startNewSession);
   $('resumeSessionBtn').addEventListener('click',resumeDraft);
   scoreInputs.forEach(i=>i.addEventListener('input',updateRoundTotal));
+  totalOnlyInput.addEventListener('input',updateRoundTotal);
+  document.querySelectorAll('input[name="entryMode"]').forEach(i=>i.addEventListener('change',()=>setRoundMode(i.value)));
   $('nextRoundBtn').addEventListener('click',goNextRound);
   $('prevRoundBtn').addEventListener('click',goPrevRound);
   $('saveExitBtn').addEventListener('click',()=>{saveDraft();showScreen('home');updateHome();});

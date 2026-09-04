@@ -182,18 +182,23 @@
       const key = `${r.walkBack}${r.round}`;
       if (existing.has(key)) continue;
       progress(`Syncing score ${i + 1} of 8…`);
-      await createListItem(cfg.scoresListId, {
+      const scoreFields = {
         Title: session.sessionId,
         SessionDate: sharePointDate(session.sessionDate),
         Disipline: session.discipline,
         Walk_x002d_Back: r.walkBack,
         Round: r.round,
-        _x0033_mScore: r.score3m,
-        _x0034_mScore: r.score4m,
-        _x0035_mScore: r.score5m,
-        _x0036_mScore: r.score6m,
-        _x0037_mScore: r.score7m
-      });
+        RoundTotal: r.roundTotal
+      };
+      // Leave distance columns genuinely blank for total-only historical rounds.
+      if (!(r.entryMode === 'total' || [r.score3m,r.score4m,r.score5m,r.score6m,r.score7m].every(v => v == null))) {
+        scoreFields._x0033_mScore = r.score3m;
+        scoreFields._x0034_mScore = r.score4m;
+        scoreFields._x0035_mScore = r.score5m;
+        scoreFields._x0036_mScore = r.score6m;
+        scoreFields._x0037_mScore = r.score7m;
+      }
+      await createListItem(cfg.scoresListId, scoreFields);
       createdScores += 1;
     }
 

@@ -1,4 +1,4 @@
-# Road to 75 Scorekeeper v0.2.1
+# Road to 75 Scorekeeper v0.2.2
 
 A local-first PWA for recording KATTA-style walk-back scores and session context on a phone.
 
@@ -40,6 +40,13 @@ This is a browser/PWA client. Do not add an Entra client secret. The client ID a
 The app always saves locally first. If Microsoft sign-in or Graph is unavailable, the session remains available on the device and can be retried from Saved Sessions.
 
 
-## v0.2.1
+## v0.2.2
 - Date-only sync now sends `YYYY-MM-DD` directly to Microsoft Lists to prevent timezone date shifts.
 - Microsoft Lists display labels may be renamed to Discipline and Achievements; the app intentionally continues using the original stable SharePoint internal names `Disipline` and `Achivements`.
+
+
+## v0.2.2
+- Adds `Round Total` sync using the SharePoint internal name `RoundTotal`.
+- Each round can be entered as full 3m–7m distance scores or as a round total only.
+- Total-only rounds leave the five distance fields blank so historical data is not fabricated.
+- CSV Scores export now includes Round Total.

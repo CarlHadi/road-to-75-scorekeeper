@@ -70,18 +70,30 @@
           <div class="progress-track"><div id="progressBar" class="progress-bar"></div></div>
         </div>
 
+        <div class="entry-mode" role="group" aria-label="Score entry type">
+          <label><input type="radio" name="entryMode" value="distances" checked /><span>Distance scores</span></label>
+          <label><input type="radio" name="entryMode" value="total" /><span>Round total only</span></label>
+        </div>
+
         <div class="card total-card">
           <span class="muted">Round total</span>
           <div><strong id="roundTotal">0</strong><span>/75</span></div>
           <span id="roundPct" class="muted">0.0%</span>
         </div>
 
-        <form id="scoreForm" class="score-grid" novalidate>
+        <div id="totalOnlyWrap" class="card total-only-wrap hidden">
+          <label class="field"><span>Round total</span><input id="totalOnlyScore" inputmode="numeric" type="number" min="0" max="75" step="1" placeholder="0–75" /></label>
+          <p class="muted total-only-note">Use this when the individual 3m–7m scores are not available.</p>
+        </div>
+
+        <form id="scoreForm" novalidate>
+        <div id="distanceScoreGrid" class="score-grid">
           <label class="score-card"><span>3m</span><input id="score3" inputmode="numeric" type="number" min="0" max="15" step="1" placeholder="0–15" /></label>
           <label class="score-card"><span>4m</span><input id="score4" inputmode="numeric" type="number" min="0" max="15" step="1" placeholder="0–15" /></label>
           <label class="score-card"><span>5m</span><input id="score5" inputmode="numeric" type="number" min="0" max="15" step="1" placeholder="0–15" /></label>
           <label class="score-card"><span>6m</span><input id="score6" inputmode="numeric" type="number" min="0" max="15" step="1" placeholder="0–15" /></label>
           <label class="score-card full"><span>7m</span><input id="score7" inputmode="numeric" type="number" min="0" max="15" step="1" placeholder="0–15" /></label>
+        </div>
         </form>
 
         <p id="scoreError" class="error" role="alert"></p>
@@ -181,7 +193,7 @@
     </main>
 
     <footer class="app-footer">
-      <span>Road to 75 · v0.2</span>
+      <span>Road to 75 · v0.2.2</span>
       <span>Local-first · Microsoft sync</span>
     </footer>
   </div>
